@@ -15,5 +15,7 @@ namespace Tomighty
 
         int PomodoroCount { get; }
         IntervalType SuggestedBreakType { get; }
+
+        bool IsFocusEnabled { get; }
     }
 }

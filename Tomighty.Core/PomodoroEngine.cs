@@ -78,5 +78,10 @@ namespace Tomighty
         {
             PomodoroCount = 0;
         }
+
+        public bool IsFocusEnabled
+        {
+           get { return userPreferences.IsFocusEnabled; }
+        }
     }
 }

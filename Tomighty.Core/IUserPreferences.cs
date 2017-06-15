@@ -13,6 +13,7 @@ namespace Tomighty
     {
         Duration GetIntervalDuration(IntervalType intervalType);
         int MaxPomodoroCount { get; }
+        bool IsFocusEnabled { get; }
         void Update(Action<IMutableUserPreferences> action);
     }
 }

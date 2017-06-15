@@ -40,6 +40,8 @@ namespace Tomighty.Windows.Timer
             this.closeButton = new System.Windows.Forms.Button();
             this.titleLabel = new Tomighty.Windows.Timer.TimerWindow.TransparentLabel();
             this.timerButton = new System.Windows.Forms.Button();
+            this.focusTextBox = new System.Windows.Forms.TextBox();
+            this.suggestListBox = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // timeLabel
@@ -49,9 +51,10 @@ namespace Tomighty.Windows.Timer
             | System.Windows.Forms.AnchorStyles.Right)));
             this.timeLabel.BackColor = System.Drawing.Color.Transparent;
             this.timeLabel.ForeColor = System.Drawing.Color.White;
-            this.timeLabel.Location = new System.Drawing.Point(12, 33);
+            this.timeLabel.Location = new System.Drawing.Point(16, 41);
+            this.timeLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.timeLabel.Name = "timeLabel";
-            this.timeLabel.Size = new System.Drawing.Size(96, 46);
+            this.timeLabel.Size = new System.Drawing.Size(169, 146);
             this.timeLabel.TabIndex = 0;
             this.timeLabel.Text = "--:--";
             this.timeLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -62,9 +65,10 @@ namespace Tomighty.Windows.Timer
             this.pinButton.FlatAppearance.BorderSize = 0;
             this.pinButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.pinButton.Image = global::Tomighty.Windows.Properties.Resources.image_unpinned;
-            this.pinButton.Location = new System.Drawing.Point(2, 2);
+            this.pinButton.Location = new System.Drawing.Point(3, 2);
+            this.pinButton.Margin = new System.Windows.Forms.Padding(4);
             this.pinButton.Name = "pinButton";
-            this.pinButton.Size = new System.Drawing.Size(22, 23);
+            this.pinButton.Size = new System.Drawing.Size(29, 28);
             this.pinButton.TabIndex = 1;
             this.pinButton.TabStop = false;
             this.pinButton.UseVisualStyleBackColor = true;
@@ -76,9 +80,10 @@ namespace Tomighty.Windows.Timer
             this.closeButton.FlatAppearance.BorderSize = 0;
             this.closeButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.closeButton.Image = global::Tomighty.Windows.Properties.Resources.image_x;
-            this.closeButton.Location = new System.Drawing.Point(95, 2);
+            this.closeButton.Location = new System.Drawing.Point(168, 2);
+            this.closeButton.Margin = new System.Windows.Forms.Padding(4);
             this.closeButton.Name = "closeButton";
-            this.closeButton.Size = new System.Drawing.Size(22, 23);
+            this.closeButton.Size = new System.Drawing.Size(29, 28);
             this.closeButton.TabIndex = 2;
             this.closeButton.TabStop = false;
             this.closeButton.UseVisualStyleBackColor = true;
@@ -89,9 +94,10 @@ namespace Tomighty.Windows.Timer
             | System.Windows.Forms.AnchorStyles.Right)));
             this.titleLabel.BackColor = System.Drawing.Color.Transparent;
             this.titleLabel.ForeColor = System.Drawing.Color.White;
-            this.titleLabel.Location = new System.Drawing.Point(31, 8);
+            this.titleLabel.Location = new System.Drawing.Point(41, 10);
+            this.titleLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.titleLabel.Name = "titleLabel";
-            this.titleLabel.Size = new System.Drawing.Size(58, 30);
+            this.titleLabel.Size = new System.Drawing.Size(118, 37);
             this.titleLabel.TabIndex = 3;
             this.titleLabel.Text = "Title";
             this.titleLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
@@ -105,27 +111,53 @@ namespace Tomighty.Windows.Timer
             this.timerButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Silver;
             this.timerButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Silver;
             this.timerButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.timerButton.Location = new System.Drawing.Point(12, 85);
+            this.timerButton.Location = new System.Drawing.Point(16, 194);
+            this.timerButton.Margin = new System.Windows.Forms.Padding(4);
             this.timerButton.Name = "timerButton";
-            this.timerButton.Size = new System.Drawing.Size(96, 23);
+            this.timerButton.Size = new System.Drawing.Size(169, 28);
             this.timerButton.TabIndex = 4;
             this.timerButton.Text = "Timer Action";
             this.timerButton.UseVisualStyleBackColor = false;
             this.timerButton.Click += new System.EventHandler(this.OnTimerButtonClick);
             // 
+            // focusTextBox
+            // 
+            this.focusTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.focusTextBox.Location = new System.Drawing.Point(16, 165);
+            this.focusTextBox.Name = "focusTextBox";
+            this.focusTextBox.Size = new System.Drawing.Size(169, 22);
+            this.focusTextBox.TabIndex = 5;
+            // 
+            // suggestListBox
+            // 
+            this.suggestListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.suggestListBox.FormattingEnabled = true;
+            this.suggestListBox.ItemHeight = 16;
+            this.suggestListBox.Location = new System.Drawing.Point(16, 191);
+            this.suggestListBox.Name = "suggestListBox";
+            this.suggestListBox.Size = new System.Drawing.Size(169, 36);
+            this.suggestListBox.TabIndex = 6;
+            this.suggestListBox.TabStop = false;
+            this.suggestListBox.Visible = false;
+            // 
             // TimerWindow
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.ClientSize = new System.Drawing.Size(120, 120);
+            this.ClientSize = new System.Drawing.Size(201, 237);
             this.ControlBox = false;
+            this.Controls.Add(this.suggestListBox);
+            this.Controls.Add(this.focusTextBox);
             this.Controls.Add(this.timerButton);
             this.Controls.Add(this.titleLabel);
             this.Controls.Add(this.closeButton);
             this.Controls.Add(this.pinButton);
             this.Controls.Add(this.timeLabel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "TimerWindow";
@@ -135,6 +167,7 @@ namespace Tomighty.Windows.Timer
             this.Text = "Tomighty";
             this.TopMost = true;
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -145,5 +178,7 @@ namespace Tomighty.Windows.Timer
         private System.Windows.Forms.Button closeButton;
         private TransparentLabel titleLabel;
         private System.Windows.Forms.Button timerButton;
+        private System.Windows.Forms.TextBox focusTextBox;
+        private System.Windows.Forms.ListBox suggestListBox;
     }
 }

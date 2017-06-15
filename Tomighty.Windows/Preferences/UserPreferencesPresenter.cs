@@ -5,6 +5,7 @@
 //  http://www.apache.org/licenses/LICENSE-2.0.txt
 //
 
+using System;
 using System.Windows.Forms;
 
 namespace Tomighty.Windows.Preferences
@@ -13,10 +14,11 @@ namespace Tomighty.Windows.Preferences
     {
         private readonly IUserPreferences userPreferences;
         private UserPreferencesForm window;
-
-        public UserPreferencesPresenter(IUserPreferences userPreferences)
+        private IPomodoroHistory pomodoroHistory;
+        public UserPreferencesPresenter(IUserPreferences userPreferences, IPomodoroHistory pomodoroHistory)
         {
             this.userPreferences = userPreferences;
+            this.pomodoroHistory = pomodoroHistory;
         }
 
         public void Show()
@@ -25,6 +27,7 @@ namespace Tomighty.Windows.Preferences
             {
                 window = new UserPreferencesForm(userPreferences);
                 window.FormClosed += OnWindowClosed;
+                window.ExportButton.Click += OnExportButtonClick;
             }
 
             if (window.Visible)
@@ -35,6 +38,14 @@ namespace Tomighty.Windows.Preferences
             {
                 window.ShowDialog();
             }
+        }
+
+        private void OnExportButtonClick(object sender, EventArgs e)
+        {
+            var saveDialog = new SaveFileDialog() { FileName = "pomodoro", AddExtension = true, DefaultExt = "csv" };
+            var result = saveDialog.ShowDialog();
+            if (result == DialogResult.OK)
+                pomodoroHistory.Export(saveDialog.FileName);
         }
 
         private void OnWindowClosed(object sender, FormClosedEventArgs e)

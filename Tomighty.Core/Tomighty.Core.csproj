@@ -38,19 +38,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="App.cs" />
+    <Compile Include="Events\AppExit.cs" />
     <Compile Include="Events\PomodoroCompleted.cs" />
     <Compile Include="Events\PomodoroCountChanged.cs" />
     <Compile Include="Events\TimeElapsed.cs" />
     <Compile Include="Events\TimerStarted.cs" />
     <Compile Include="Events\TimerStopped.cs" />
+    <Compile Include="IApp.cs" />
     <Compile Include="ICountdownClock.cs" />
     <Compile Include="IEventHub.cs" />
     <Compile Include="IMutableUserPreferences.cs" />
     <Compile Include="IntervalType.cs" />
+    <Compile Include="IPomodoroHistory.cs" />
     <Compile Include="ITimer.cs" />
     <Compile Include="IUserPreferences.cs" />
     <Compile Include="IPomodoroEngine.cs" />
     <Compile Include="PomodoroEngine.cs" />
+    <Compile Include="PomodoroHistory.cs" />
+    <Compile Include="PomodoroStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Duration.cs" />
     <Compile Include="SynchronousEventHub.cs" />
