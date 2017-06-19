@@ -42,9 +42,15 @@ namespace Tomighty.Windows
             trayMenu.OnPreferencesClick((sender, e) => userPreferencesPresenter.Show());
 
             Application.ApplicationExit += (sender, e) => eventHub.Publish(new AppExit());
-            ThreadExit += (sender, e) =>  trayIcon.Dispose();
+            ThreadExit += (sender, e) => trayIcon.Dispose();
+
+            if (userPreferences.IsFocusEnabled)
+            {
+                pomodoroEngine.StartTimer(IntervalType.Pomodoro);
+                timerWindowPresenter.Show();
+            }
         }
-        
+
         private static NotifyIcon CreateTrayIcon(ITrayMenu trayMenu)
         {
             var trayIcon = new NotifyIcon(new Container());

@@ -78,13 +78,7 @@ namespace Tomighty.Windows.Timer
 
         public void Toggle(Point approximateLocation)
         {
-            var shouldCreateWindow = window == null;
-
-            if (shouldCreateWindow)
-            {
-                window = CreateTimerWindow();
-            }
-
+            var isCreated = CheckWindowExists();
             if (window.Visible)
             {
                 if (!IsPinned)
@@ -94,12 +88,35 @@ namespace Tomighty.Windows.Timer
             {
                 Point location = GetLocationNearTrayIcon(approximateLocation);
                 window.Show(location);
-
-                if (shouldCreateWindow)
-                {
+                if (isCreated)
                     currentState.Apply(window, countdownClock.RemainingTime);
-                }
             }
+        }
+
+        public void Show()
+        {
+            var isCreated = CheckWindowExists();
+            if (!window.Visible)
+            {
+                window.StartPosition = FormStartPosition.CenterScreen;
+                window.Show();
+                if (isCreated)
+                    currentState.Apply(window, countdownClock.RemainingTime);
+            }
+        }
+
+        private bool CheckWindowExists()
+        {
+            var isCreated = false;
+            var shouldCreateWindow = window == null;
+
+            if (shouldCreateWindow)
+            {
+                window = CreateTimerWindow();
+                isCreated = true;
+            }
+
+            return isCreated;
         }
 
         private void OnTimerStarted(TimerStarted @event)
@@ -225,7 +242,7 @@ namespace Tomighty.Windows.Timer
                 window.SuggestListBox.Visible = true;
                 window.SuggestListBox.Focus();
             }
-            else 
+            else
                 window.SuggestListBox.Visible = false;
         }
 

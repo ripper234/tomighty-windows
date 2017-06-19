@@ -125,6 +125,7 @@ namespace Tomighty.Windows.Timer
             this.focusTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.focusTextBox.Location = new System.Drawing.Point(16, 165);
+            this.focusTextBox.MaxLength = 35;
             this.focusTextBox.Name = "focusTextBox";
             this.focusTextBox.Size = new System.Drawing.Size(169, 22);
             this.focusTextBox.TabIndex = 5;
