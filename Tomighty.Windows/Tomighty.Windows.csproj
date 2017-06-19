@@ -87,8 +87,10 @@
       <DependentUpon>AboutWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="About\AboutWindowPresenter.cs" />
+    <Compile Include="Extensions\TextBoxExt.cs" />
     <Compile Include="IntervalTypeExtensions.cs" />
     <Compile Include="Preferences\UserPreferencesPresenter.cs" />
+    <Compile Include="Timer\AutoCompleteModel.cs" />
     <Compile Include="Tray\ITrayMenu.cs" />
     <Compile Include="Tray\ITrayMenuMutator.cs" />
     <Compile Include="Tray\TrayMenu.cs" />

@@ -6,6 +6,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using Tomighty.Events;
@@ -28,13 +29,19 @@ namespace Tomighty.Windows.Timer
         private TimerWindow window;
         private Taskbar _taskbar;
         private bool _isPinned;
+        private AutoCompleteModel autoCompleteModel;
+        private IPomodoroHistory pomodoroHistory;
+        private IPomodoroEngine pomodoroEngine;
 
-        public TimerWindowPresenter(IPomodoroEngine pomodoroEngine, ICountdownClock countdownClock, IEventHub eventHub)
+        public TimerWindowPresenter(IApp app, IPomodoroEngine pomodoroEngine, ICountdownClock countdownClock, IPomodoroHistory pomodoroHistory, IEventHub eventHub)
         {
             this.countdownClock = countdownClock;
+            this.pomodoroHistory = pomodoroHistory;
+            this.pomodoroEngine = pomodoroEngine;
 
+            autoCompleteModel = new AutoCompleteModel(app, "focusList.json", eventHub);
             idleState = new IdleState(pomodoroEngine);
-            pomodoroState = new PomodoroState(pomodoroEngine);
+            pomodoroState = new PomodoroState(pomodoroEngine, autoCompleteModel);
             shortBreakState = new ShortBreakState(pomodoroEngine);
             longBreakState = new LongBreakState(pomodoroEngine);
             pomodoroCompletedState = new PomodoroCompletedState(pomodoroEngine);
@@ -60,21 +67,18 @@ namespace Tomighty.Windows.Timer
             window.VisibleChanged += OnWindowVisibleChanged;
             window.PinButton.Click += OnPinButtonClick;
             window.CloseButton.Click += OnCloseButtonClick;
+            window.FocusTextBox.PreviewKeyDown += OnFocusTextBoxKeyDown;
+            window.SuggestListBox.SelectedIndexChanged += OnSuggestListBoxSelectionIndexChanged;
+            window.SuggestListBox.PreviewKeyDown += OnSuggestListBoxSelectionKeyDown;
 
             new DragAroundController(window, () => IsPinned);
 
             return window;
         }
-        
+
         public void Toggle(Point approximateLocation)
         {
-            var shouldCreateWindow = window == null;
-
-            if (shouldCreateWindow)
-            {
-                window = CreateTimerWindow();
-            }
-
+            var isCreated = CheckWindowExists();
             if (window.Visible)
             {
                 if (!IsPinned)
@@ -84,12 +88,35 @@ namespace Tomighty.Windows.Timer
             {
                 Point location = GetLocationNearTrayIcon(approximateLocation);
                 window.Show(location);
-
-                if (shouldCreateWindow)
-                {
+                if (isCreated)
                     currentState.Apply(window, countdownClock.RemainingTime);
-                }
             }
+        }
+
+        public void Show()
+        {
+            var isCreated = CheckWindowExists();
+            if (!window.Visible)
+            {
+                window.StartPosition = FormStartPosition.CenterScreen;
+                window.Show();
+                if (isCreated)
+                    currentState.Apply(window, countdownClock.RemainingTime);
+            }
+        }
+
+        private bool CheckWindowExists()
+        {
+            var isCreated = false;
+            var shouldCreateWindow = window == null;
+
+            if (shouldCreateWindow)
+            {
+                window = CreateTimerWindow();
+                isCreated = true;
+            }
+
+            return isCreated;
         }
 
         private void OnTimerStarted(TimerStarted @event)
@@ -99,6 +126,7 @@ namespace Tomighty.Windows.Timer
 
         private void OnTimerStopped(TimerStopped @event)
         {
+            PomodoroStatus status = PomodoroStatus.Done;
             if (@event.IsIntervalCompleted)
             {
                 EnterState(GetCompletedIntervalStateFor(@event.IntervalType), @event.RemainingTime);
@@ -106,7 +134,14 @@ namespace Tomighty.Windows.Timer
             else
             {
                 EnterState(GetTimerInterruptedStateFor(@event.IntervalType), @event.RemainingTime);
+                status = PomodoroStatus.Interrupted;
             }
+
+            var focus = string.Empty;
+            if (@event.IntervalType == IntervalType.Pomodoro && pomodoroEngine.IsFocusEnabled)
+                focus = window.FocusTextBox.Text;
+
+            pomodoroHistory.Add(DateTime.Now, @event.IntervalType, status, focus);
         }
 
         private void OnTimeElapsed(TimeElapsed @event)
@@ -116,7 +151,7 @@ namespace Tomighty.Windows.Timer
                 window.UpdateTimeDisplay(@event.RemainingTime.ToTimeString());
             }
         }
-        
+
         private void EnterState(IWindowState newState, Duration remainingTime)
         {
             if (newState != currentState)
@@ -170,7 +205,9 @@ namespace Tomighty.Windows.Timer
         private void OnWindowVisibleChanged(object sender, System.EventArgs e)
         {
             if (window.Visible)
+            {
                 window.Focus();
+            }
         }
 
         private void OnLostFocus(object sender, System.EventArgs e)
@@ -178,7 +215,51 @@ namespace Tomighty.Windows.Timer
             if (!IsPinned && !window.ContainsFocus)
                 window.Hide();
         }
-        
+
+        private void OnFocusTextBoxKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Escape)
+            {
+                autoCompleteModel.AddFocusWord(window.FocusTextBox.Text);
+                window.UnfocusFocusTextBox();
+            }
+
+            if (e.KeyCode == Keys.Space && e.Control && string.IsNullOrEmpty(window.FocusTextBox.Text))
+            {
+                var source = autoCompleteModel.GetSource();
+                var count = 0;
+                var list = new List<string>();
+                foreach (var item in source)
+                {
+                    list.Add(item.ToString());
+                    ++count;
+                    if (count >= 10)
+                        break;
+                }
+
+                window.SuggestListBox.Items.Clear();
+                window.SuggestListBox.Items.AddRange(list.ToArray());
+                window.SuggestListBox.Visible = true;
+                window.SuggestListBox.Focus();
+            }
+            else
+                window.SuggestListBox.Visible = false;
+        }
+
+        private void OnSuggestListBoxSelectionIndexChanged(object sender, EventArgs e)
+        {
+            window.FocusTextBox.Text = window.SuggestListBox.SelectedItem.ToString();
+        }
+
+        private void OnSuggestListBoxSelectionKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Escape)
+            {
+                window.SuggestListBox.Visible = false;
+                window.FocusTextBox.Focus();
+            }
+        }
+
         private Taskbar Taskbar => _taskbar == null ? _taskbar = new Taskbar() : _taskbar;
 
         private bool IsPinned
@@ -221,6 +302,7 @@ namespace Tomighty.Windows.Timer
                 window.UpdateColorScheme(TimerWindow.DarkGrayColorScheme);
                 window.UpdateTimeDisplay(Duration.Zero.ToTimeString());
                 window.SetTimerAction("Start Pomodoro", StartTimer);
+                window.SetIsFocusVisible(false);
             }
 
             private void StartTimer()
@@ -232,10 +314,12 @@ namespace Tomighty.Windows.Timer
         private class PomodoroState : IWindowState
         {
             private readonly IPomodoroEngine pomodoroEngine;
+            private readonly AutoCompleteModel autoCompleteModel;
 
-            public PomodoroState(IPomodoroEngine pomodoroEngine)
+            public PomodoroState(IPomodoroEngine pomodoroEngine, AutoCompleteModel autoCompleteModel)
             {
                 this.pomodoroEngine = pomodoroEngine;
+                this.autoCompleteModel = autoCompleteModel;
             }
 
             public void Apply(TimerWindow window, Duration remainingTime)
@@ -247,6 +331,14 @@ namespace Tomighty.Windows.Timer
                 window.UpdateColorScheme(TimerWindow.RedColorScheme);
                 window.UpdateTimeDisplay(remainingTime.ToTimeString());
                 window.SetTimerAction("Interrupt", pomodoroEngine.StopTimer);
+                if (pomodoroEngine.IsFocusEnabled)
+                {
+                    window.FocusTextBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+                    window.FocusTextBox.AutoCompleteCustomSource = autoCompleteModel.GetSource();
+                    window.FocusTextBox.AutoCompleteSource = AutoCompleteSource.CustomSource;
+                    window.SetIsFocusVisible(true);
+                    window.FocusTextBox.Focus();
+                }
             }
         }
 
@@ -268,6 +360,7 @@ namespace Tomighty.Windows.Timer
                 window.UpdateColorScheme(TimerWindow.GreenColorScheme);
                 window.UpdateTimeDisplay(remainingTime.ToTimeString());
                 window.SetTimerAction("Interrupt", pomodoroEngine.StopTimer);
+                window.SetIsFocusVisible(false);
             }
         }
 
@@ -289,6 +382,7 @@ namespace Tomighty.Windows.Timer
                 window.UpdateColorScheme(TimerWindow.BlueColorScheme);
                 window.UpdateTimeDisplay(remainingTime.ToTimeString());
                 window.SetTimerAction("Interrupt", pomodoroEngine.StopTimer);
+                window.SetIsFocusVisible(false);
             }
         }
 
@@ -310,6 +404,7 @@ namespace Tomighty.Windows.Timer
                 window.UpdateColorScheme(TimerWindow.DarkGrayColorScheme);
                 window.UpdateTimeDisplay(Duration.Zero.ToTimeString());
                 window.SetTimerAction($"Start {pomodoroEngine.SuggestedBreakType.GetName()}", StartTimer);
+                window.SetIsFocusVisible(false);
             }
 
             private void StartTimer()
@@ -336,6 +431,7 @@ namespace Tomighty.Windows.Timer
                 window.UpdateColorScheme(TimerWindow.DarkGrayColorScheme);
                 window.UpdateTimeDisplay(Duration.Zero.ToTimeString());
                 window.SetTimerAction("Start Pomodoro", StartTimer);
+                window.SetIsFocusVisible(false);
             }
 
             private void StartTimer()
@@ -364,6 +460,7 @@ namespace Tomighty.Windows.Timer
                 window.UpdateColorScheme(TimerWindow.DarkGrayColorScheme);
                 window.UpdateTimeDisplay(remainingTime.ToTimeString());
                 window.SetTimerAction("Start Pomodoro", StartTimer);
+                window.SetIsFocusVisible(false);
             }
 
             private void StartTimer()

@@ -13,12 +13,15 @@ namespace Tomighty.Windows.Preferences
 {
     public class UserPreferences : IMutableUserPreferences
     {
-        private static readonly string FilePath = Path.Combine(GetOrCreateApplicationDirectory(), "preferences.json");
+        private static string FilePath = null;
 
         private readonly Values values;
 
-        public UserPreferences()
+        public UserPreferences(IApp app)
         {
+            if (string.IsNullOrEmpty(FilePath))
+                FilePath = Path.Combine(app.GetOrCreateApplicationDirectory(), "preferences.json");
+
             values = ReadFromFile() ?? GetDefaultValues();
         }
 
@@ -38,17 +41,18 @@ namespace Tomighty.Windows.Preferences
                 PomodoroDuration = Duration.InMinutes(25).Seconds,
                 ShortBreakDuration = Duration.InMinutes(5).Seconds,
                 LongBreakDuration = Duration.InMinutes(15).Seconds,
-                MaxPomodoroCount = 4
+                MaxPomodoroCount = 4,
+                IsFocusEnabled = false
             };
         }
 
-        private static string GetOrCreateApplicationDirectory()
-        {
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Tomighty");
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
-            return path;
-        }
+        //private static string GetOrCreateApplicationDirectory()
+        //{
+        //    var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Tomighty");
+        //    if (!Directory.Exists(path))
+        //        Directory.CreateDirectory(path);
+        //    return path;
+        //}
 
         public Duration GetIntervalDuration(IntervalType intervalType)
         {
@@ -73,6 +77,12 @@ namespace Tomighty.Windows.Preferences
             set { values.MaxPomodoroCount = value; }
         }
 
+        public bool IsFocusEnabled
+        {
+            get { return values.IsFocusEnabled; }
+            set { values.IsFocusEnabled = value; }
+        }
+
         public void Update(Action<IMutableUserPreferences> action)
         {
             action(this);
@@ -86,6 +96,7 @@ namespace Tomighty.Windows.Preferences
             public int ShortBreakDuration { get; set; }
             public int LongBreakDuration { get; set; }
             public int MaxPomodoroCount { get; set; }
+            public bool IsFocusEnabled { get; set; }
         }
     }
 }

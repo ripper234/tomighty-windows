@@ -6,8 +6,10 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using Tomighty.Windows.Extensions;
 
 namespace Tomighty.Windows.Timer
 {
@@ -52,6 +54,7 @@ namespace Tomighty.Windows.Timer
             Icon = Properties.Resources.icon_tomato_red;
 
             timeLabel.Font = new Font(SystemFonts.DefaultFont.FontFamily, 22f);
+            ActiveControl = focusTextBox;
 
             UpdateTimeDisplayDelegate = (text) => timeLabel.Text = text;
             UpdateTitleDelegate = (text) => titleLabel.Text = text;
@@ -59,7 +62,15 @@ namespace Tomighty.Windows.Timer
         }
 
         public Button PinButton => pinButton;
+
         public Button CloseButton => closeButton;
+
+        public Button TimerButton => timerButton;
+
+        public TextBox FocusTextBox => focusTextBox;
+
+        public ListBox SuggestListBox => suggestListBox;
+
 
         public void UpdateTitle(string text)
         {
@@ -67,6 +78,21 @@ namespace Tomighty.Windows.Timer
                 timeLabel.BeginInvoke(UpdateTitleDelegate, text);
             else
                 UpdateTitleDelegate(text);
+        }
+
+        public void SetIsFocusVisible(bool isVisible)
+        {
+            focusTextBox.BeginInvoke(new Action(() =>
+            {
+                focusTextBox.Visible = isVisible;
+                focusTextBox.Focus();
+                focusTextBox.CueBanner(true, "Focus: e.g. homework");
+            }));
+        }
+
+        public void UnfocusFocusTextBox()
+        {
+            timeLabel.Focus();
         }
 
         public void SetTimerAction(string text, Action action)
